@@ -1,0 +1,19 @@
+{
+  "name": "wrenchmode-express",
+  "version": "0.0.1",
+  "description": "Easily switch your web app in and out of maintenance mode using Wrenchmode.com",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/micahwedemeyer/wrenchmode-express.git"
+  },
+  "author": "Micah Wedemeyer",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/micahwedemeyer/wrenchmode-express/issues"
+  },
+  "homepage": "https://github.com/micahwedemeyer/wrenchmode-express#readme"
+}
