@@ -16,9 +16,12 @@
     "url": "https://github.com/micahwedemeyer/wrenchmode-express/issues"
   },
   "homepage": "https://github.com/micahwedemeyer/wrenchmode-express#readme",
-  "keywords" : [
+  "keywords": [
     "maintenance",
     "express",
     "middleware"
-  ]
+  ],
+  "devDependencies": {
+    "mocha": "^2.5.3"
+  }
 }
