@@ -2,10 +2,15 @@
 
 var assert = require('chai').assert;
 var httpMocks = require('node-mocks-http');
+var nock = require('nock');
 
 var wrenchmodeExpress = require('../index');
 
+const WRENCHMODE_STATUS_HOST = "https://wrenchmode.com";
+const WRENCHMODE_STATUS_PATH = "/api/projects/status";
+
 var request, response = {};
+var scope;
 
 describe("WrenchmodeExpress", function() {
   describe("basic operation", function() {
@@ -31,6 +36,14 @@ describe("WrenchmodeExpress", function() {
         url: '/myapp/somepath'
       });
       response = httpMocks.createResponse();
+
+      scope = nock(WRENCHMODE_STATUS_HOST)
+      .persist()
+      .post(WRENCHMODE_STATUS_PATH)
+      .reply(200, {
+        is_switched: true,
+        switch_url: "https://myproject.wrenchmode.com/maintenance"
+      });
     });
 
     it("should redirect to Wrenchmode", function(done) {
@@ -43,9 +56,10 @@ describe("WrenchmodeExpress", function() {
       // Give it a little time to get a response from our fake Wrenchmode server
       setTimeout(function() {
         middleware(request, response, function() {})
+        assert(scope.isDone());
         assert.equal(302, response.statusCode);
         done();
-      }, 10);
+      }, 30);
     });
   });
 });
