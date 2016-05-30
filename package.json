@@ -10,10 +10,15 @@
     "type": "git",
     "url": "git+ssh://git@github.com/micahwedemeyer/wrenchmode-express.git"
   },
-  "author": "Micah Wedemeyer",
+  "author": "Micah Wedemeyer <me@micahwedemeyer.com>",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/micahwedemeyer/wrenchmode-express/issues"
   },
-  "homepage": "https://github.com/micahwedemeyer/wrenchmode-express#readme"
+  "homepage": "https://github.com/micahwedemeyer/wrenchmode-express#readme",
+  "keywords" : [
+    "maintenance",
+    "express",
+    "middleware"
+  ]
 }
