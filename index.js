@@ -1,5 +1,7 @@
 var http = require('http');
 var https = require('https');
+var os = require('os');
+var process = require('process');
 
 const VERSION = "0.0.1";
 const CLIENT_NAME = "wrenchmode-express";
@@ -23,7 +25,9 @@ function wrenchmodeExpress(options) {
 
   // Set up the periodic status checking
   var currentStatus = {
-    switched: false
+    switched: false,
+    checkInProgress: false,
+    switchURL: null
   };
   setInterval(statusCheck.bind(this,currentStatus), opts.checkDelaySecs * 1000);
 
@@ -37,13 +41,18 @@ function wrenchmodeExpress(options) {
 }
 
 function statusCheck(currentStatus) {
-  retrieveStatus()
-  .then(function(response) {
-    updateStatus(currentStatus, response);
-  })
-  .catch(function(error) {
-    currentStatus.switched = false;
-  });
+  if(!currentStatus.checkInProgress) {
+    currentStatus.checkInProgress = true;
+    retrieveStatus()
+    .then(function(response) {
+      updateStatus(currentStatus, response);
+      currentStatus.checkInProgress = false;
+    })
+    .catch(function(error) {
+      currentStatus.switched = false;
+      currentStatus.checkInProgress = false;
+    });
+  }
 }
 
 function retrieveStatus(currentStatus) {
@@ -63,7 +72,9 @@ function retrieveStatus(currentStatus) {
 
   return new Promise(function(resolve, reject) {
     var req = protocol.request(options, (res) => {
-      // TODO: Check status code
+      if (res.statusCode !== 200) {
+        reject("HTTP Status: " + res.statusCode);
+      }
 
       var responseBody = '';
       res.on('data', (d) => {
@@ -75,14 +86,17 @@ function retrieveStatus(currentStatus) {
         resolve(JSON.parse(responseBody));
       });
     });
+    req.setTimeout(opts.readTimeoutSecs * 1000);
 
-    // TODO: Write the basic status info to the server in the POST body
-
+    req.write(JSON.stringify(buildUpdatePackage));
     req.end();
 
     req.on('error', (e) => {
       reject(e);
     });
+    req.on('timeout', (e) => {
+      reject(e);
+    })
   });
 }
 
@@ -92,6 +106,17 @@ function updateStatus(currentStatus, serverResponse) {
     currentStatus.switchUrl = serverResponse.switch_url;
   } else {
     currentStatus.switched = false;
+  }
+}
+
+function buildUpdatePackage() {
+  return {
+    hostname: os.hostname(),
+    ip_address: "127.0.0.1",
+    pid: process.pid,
+    client_name: CLIENT_NAME,
+    client_version: VERSION
+
   }
 }
 
