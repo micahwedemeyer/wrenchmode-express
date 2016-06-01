@@ -6,22 +6,25 @@ var process = require('process');
 const VERSION = "0.0.1";
 const CLIENT_NAME = "wrenchmode-express";
 
-var opts = {
-  forceOpen: false,
-  ignoreTestMode: true,
-  disableLocalWrench: false,
-  statusProtocol: "https",
-  statusHost: "wrenchmode.com",
-  statusPath: "/api/projects/status",
-  checkDelaySecs: 5,
-  logging: false,
-  readTimeoutSecs: 3
-};
-
 function wrenchmodeExpress(options) {
+
+  var opts = {
+    forceOpen: false,
+    ignoreTestMode: true,
+    disableLocalWrench: false,
+    statusProtocol: "https",
+    statusHost: "wrenchmode.com",
+    statusPath: "/api/projects/status",
+    checkDelaySecs: 5,
+    logging: false,
+    readTimeoutSecs: 3
+  };
+
   Object.assign(opts, options);
 
-  // TODO : Error out if the jwt is not set
+  if(!opts.jwt) {
+    throw new Error("You must set the jwt for the wrenchmodeExpress middleware. Please see the README for more info.");
+  }
 
   // Set up the periodic status checking
   var currentStatus = {
@@ -29,7 +32,7 @@ function wrenchmodeExpress(options) {
     checkInProgress: false,
     switchURL: null
   };
-  setInterval(statusCheck.bind(this,currentStatus), opts.checkDelaySecs * 1000);
+  setInterval(statusCheck.bind(this,currentStatus, opts), opts.checkDelaySecs * 1000);
 
   return function(req, res, next) {
     if( !currentStatus.switched ) {
@@ -40,10 +43,10 @@ function wrenchmodeExpress(options) {
   };
 }
 
-function statusCheck(currentStatus) {
+function statusCheck(currentStatus, opts) {
   if(!currentStatus.checkInProgress) {
     currentStatus.checkInProgress = true;
-    retrieveStatus()
+    retrieveStatus(opts)
     .then(function(response) {
       updateStatus(currentStatus, response);
       currentStatus.checkInProgress = false;
@@ -55,7 +58,7 @@ function statusCheck(currentStatus) {
   }
 }
 
-function retrieveStatus(currentStatus) {
+function retrieveStatus(opts) {
   var options = {
     hostname: opts.statusHost,
     path: opts.statusPath,

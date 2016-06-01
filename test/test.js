@@ -23,9 +23,15 @@ describe("WrenchmodeExpress", function() {
     });
 
     it("should call the next middleware in the chain", function(done) {
-      wrenchmodeExpress({})(request, response, function() {
+      wrenchmodeExpress({jwt: "foo"})(request, response, function() {
         done();
       });
+    });
+
+    it("should throw an error if the jwt is not set", function() {
+      assert.throws(function() {
+        wrenchmodeExpress({});
+      }, Error, /must set the jwt/);
     });
   });
 
@@ -48,6 +54,7 @@ describe("WrenchmodeExpress", function() {
 
     it("should redirect to Wrenchmode", function(done) {
       let options = {
+        jwt: "foo",
         checkDelaySecs: 0.001
       };
 
@@ -86,6 +93,7 @@ describe("WrenchmodeExpress", function() {
 
       it("should allow the request to go through", function(done) {
         let options = {
+          jwt: "foo",
           checkDelaySecs: 0.1,
           readTimeoutSecs: 0.1
         };
@@ -111,6 +119,7 @@ describe("WrenchmodeExpress", function() {
 
       it("should allow the request to go through", function(done) {
         let options = {
+          jwt: "foo",
           checkDelaySecs: 0.001
         };
 
