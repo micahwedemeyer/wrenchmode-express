@@ -13,6 +13,10 @@ var request, response = {};
 var scope;
 
 describe("WrenchmodeExpress", function() {
+  beforeEach(function() {
+    nock.cleanAll();
+  });
+
   describe("basic operation", function() {
     beforeEach(function() {
       request = httpMocks.createRequest({
@@ -114,7 +118,7 @@ describe("WrenchmodeExpress", function() {
         scope = nock(WRENCHMODE_STATUS_HOST)
         .persist()
         .post(WRENCHMODE_STATUS_PATH)
-        .reply(500, "barf")
+        .replyWithError("barf");
       });
 
       it("should allow the request to go through", function(done) {
@@ -125,11 +129,11 @@ describe("WrenchmodeExpress", function() {
 
         let middleware = wrenchmodeExpress(options);
 
-        // It will timeout and then respond with a 200
+        // It will timeout and then call the next middleware in the chain
         setTimeout(function() {
-          middleware(request, response, function() {})
-          assert.equal(200, response.statusCode);
-          done();
+          middleware(request, response, function() {
+            done();
+          });
         }, 30);
       });
     });

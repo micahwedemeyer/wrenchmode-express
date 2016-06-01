@@ -76,7 +76,7 @@ function retrieveStatus(opts) {
   return new Promise(function(resolve, reject) {
     var req = protocol.request(options, (res) => {
       if (res.statusCode !== 200) {
-        reject("HTTP Status: " + res.statusCode);
+        return reject(new Error("HTTP Status: " + res.statusCode));
       }
 
       var responseBody = '';
@@ -86,7 +86,7 @@ function retrieveStatus(opts) {
 
       res.on('end', () => {
         // TODO: Catch JSON parse error
-        resolve(JSON.parse(responseBody));
+        return resolve(JSON.parse(responseBody));
       });
     });
     req.setTimeout(opts.readTimeoutSecs * 1000);
@@ -95,10 +95,10 @@ function retrieveStatus(opts) {
     req.end();
 
     req.on('error', (e) => {
-      reject(e);
+      return reject(e);
     });
     req.on('timeout', (e) => {
-      reject(e);
+      return reject(e);
     })
   });
 }
