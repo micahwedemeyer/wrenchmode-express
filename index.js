@@ -31,10 +31,10 @@ function wrenchmodeExpress(options) {
     switched: false,
     switchURL: null
   };
-  scheduleStatusCheck(currentStatus, opts);
+  statusCheckLoop(currentStatus, opts);
 
   return function(req, res, next) {
-    if( !currentStatus.switched ) {
+    if( opts.forceOpen || !currentStatus.switched ) {
       next();
     } else {
       res.redirect(302, currentStatus.switchURL);
@@ -42,11 +42,7 @@ function wrenchmodeExpress(options) {
   };
 }
 
-function scheduleStatusCheck(currentStatus, opts) {
-  setTimeout(statusCheck.bind(this, currentStatus, opts), opts.checkDelaySecs * 1000);
-}
-
-function statusCheck(currentStatus, opts) {
+function statusCheckLoop(currentStatus, opts) {
   retrieveStatus(opts)
   .then(function(response) {
     updateStatus(currentStatus, response);
@@ -55,7 +51,7 @@ function statusCheck(currentStatus, opts) {
     currentStatus.switched = false;
   })
   .then(function() {
-    scheduleStatusCheck(currentStatus, opts);
+    setTimeout(statusCheckLoop.bind(this, currentStatus, opts), opts.checkDelaySecs * 1000);
   })
 }
 

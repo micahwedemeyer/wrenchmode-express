@@ -72,6 +72,24 @@ describe("WrenchmodeExpress", function() {
         done();
       }, 30);
     });
+
+    it("should allow a request through if forceOpen is true", function(done) {
+      let options = {
+        jwt: "foo",
+        checkDelaySecs: 0.001,
+        forceOpen: true
+      };
+
+      let middleware = wrenchmodeExpress(options);
+
+      // Give it a little time to get a response from our fake Wrenchmode server
+      setTimeout(function() {
+        middleware(request, response, function() {})
+        assert(scope.isDone());
+        assert.equal(200, response.statusCode);
+        done();
+      }, 30);
+    });
   });
 
   describe("when an error occurs, like", function() {
@@ -108,6 +126,7 @@ describe("WrenchmodeExpress", function() {
         setTimeout(function() {
           middleware(request, response, function() {})
           assert.equal(200, response.statusCode);
+          assert(scope.isDone());
           done();
         }, 50);
       });
