@@ -137,5 +137,30 @@ describe("WrenchmodeExpress", function() {
         }, 30);
       });
     });
+
+    describe("garbage JSON returned from the Wrenchmode server", function() {
+      beforeEach(function() {
+        scope = nock(WRENCHMODE_STATUS_HOST)
+        .persist()
+        .post(WRENCHMODE_STATUS_PATH)
+        .reply(200, "This ain't JSON...")
+      });
+
+      it("should allow the request to go through", function(done) {
+        let options = {
+          jwt: "foo",
+          checkDelaySecs: 0.001
+        };
+
+        let middleware = wrenchmodeExpress(options);
+
+        // It will timeout and then call the next middleware in the chain
+        setTimeout(function() {
+          middleware(request, response, function() {
+            done();
+          });
+        }, 30);
+      });
+    });
   });
 });

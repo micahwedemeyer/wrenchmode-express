@@ -29,10 +29,9 @@ function wrenchmodeExpress(options) {
   // Set up the periodic status checking
   var currentStatus = {
     switched: false,
-    checkInProgress: false,
     switchURL: null
   };
-  setInterval(statusCheck.bind(this,currentStatus, opts), opts.checkDelaySecs * 1000);
+  scheduleStatusCheck(currentStatus, opts);
 
   return function(req, res, next) {
     if( !currentStatus.switched ) {
@@ -43,19 +42,21 @@ function wrenchmodeExpress(options) {
   };
 }
 
+function scheduleStatusCheck(currentStatus, opts) {
+  setTimeout(statusCheck.bind(this, currentStatus, opts), opts.checkDelaySecs * 1000);
+}
+
 function statusCheck(currentStatus, opts) {
-  if(!currentStatus.checkInProgress) {
-    currentStatus.checkInProgress = true;
-    retrieveStatus(opts)
-    .then(function(response) {
-      updateStatus(currentStatus, response);
-      currentStatus.checkInProgress = false;
-    })
-    .catch(function(error) {
-      currentStatus.switched = false;
-      currentStatus.checkInProgress = false;
-    });
-  }
+  retrieveStatus(opts)
+  .then(function(response) {
+    updateStatus(currentStatus, response);
+  })
+  .catch(function(error) {
+    currentStatus.switched = false;
+  })
+  .then(function() {
+    scheduleStatusCheck(currentStatus, opts);
+  })
 }
 
 function retrieveStatus(opts) {
@@ -85,8 +86,14 @@ function retrieveStatus(opts) {
       });
 
       res.on('end', () => {
-        // TODO: Catch JSON parse error
-        return resolve(JSON.parse(responseBody));
+        var json = null;
+        try {
+          json = JSON.parse(responseBody);
+        } catch (e) {
+          reject(e);
+        }
+
+        return resolve(json);
       });
     });
     req.setTimeout(opts.readTimeoutSecs * 1000);
