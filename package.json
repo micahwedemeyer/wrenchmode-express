@@ -3,6 +3,7 @@
   "version": "0.0.1",
   "description": "Easily switch your web app in and out of maintenance mode using Wrenchmode.com",
   "main": "index.js",
+  "engines" : { "node" : ">=4.0.0" },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
