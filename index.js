@@ -2,6 +2,7 @@ var http = require('http');
 var https = require('https');
 var os = require('os');
 var process = require('process');
+var Netmask = require('netmask').Netmask;
 
 const VERSION = "0.0.1";
 const CLIENT_NAME = "wrenchmode-express";
@@ -29,15 +30,17 @@ function wrenchmodeExpress(options) {
   // Set up the periodic status checking
   var currentStatus = {
     switched: false,
-    switchURL: null
+    switchURL: null,
+    ipWhitelist: []
   };
   statusCheckLoop(currentStatus, opts);
 
   return function(req, res, next) {
-    if( opts.forceOpen || !currentStatus.switched ) {
-      next();
-    } else {
+    var shouldShowSwitch = currentStatus.switched && !opts.forceOpen && !isIpWhitelisted(req, currentStatus);
+    if( shouldShowSwitch ) {
       res.redirect(302, currentStatus.switchURL);
+    } else {
+      next();
     }
   };
 }
@@ -110,6 +113,7 @@ function updateStatus(currentStatus, serverResponse) {
   if(serverResponse.is_switched) {
     currentStatus.switched = true;
     currentStatus.switchUrl = serverResponse.switch_url;
+    currentStatus.ipWhitelist = serverResponse.ip_whitelist || [];
   } else {
     currentStatus.switched = false;
   }
@@ -124,6 +128,21 @@ function buildUpdatePackage() {
     client_version: VERSION
 
   }
+}
+
+function isIpWhitelisted(req, currentStatus) {
+  var whitelisted = false;
+  try {
+    currentStatus.ipWhitelist.forEach(function(whitelisted_ip) {
+      var block = new Netmask(whitelisted_ip);
+      if(block.contains(req.ip)) {
+        whitelisted = true
+      }
+    });
+  } catch (e) {
+    // Do nothing? As long as we return true/false, everything should be okay...
+  }
+  return whitelisted;
 }
 
 module.exports = wrenchmodeExpress;

@@ -3,7 +3,9 @@
   "version": "0.0.1",
   "description": "Easily switch your web app in and out of maintenance mode using Wrenchmode.com",
   "main": "index.js",
-  "engines" : { "node" : ">=4.0.0" },
+  "engines": {
+    "node": ">=4.0.0"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -27,5 +29,8 @@
     "mocha": "^2.5.3",
     "nock": "^8.0.0",
     "node-mocks-http": "^1.5.2"
+  },
+  "dependencies": {
+    "netmask": ">= 1.0.0"
   }
 }

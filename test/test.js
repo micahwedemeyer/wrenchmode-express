@@ -23,6 +23,7 @@ describe("WrenchmodeExpress", function() {
         method: 'GET',
         url: '/myapp/somepath'
       });
+      request.ip = "127.0.0.1";
       response = httpMocks.createResponse();
     });
 
@@ -45,6 +46,7 @@ describe("WrenchmodeExpress", function() {
         method: 'GET',
         url: '/myapp/somepath'
       });
+      request.ip = "127.0.0.1";
       response = httpMocks.createResponse();
 
       scope = nock(WRENCHMODE_STATUS_HOST)
@@ -52,7 +54,11 @@ describe("WrenchmodeExpress", function() {
       .post(WRENCHMODE_STATUS_PATH)
       .reply(200, {
         is_switched: true,
-        switch_url: "https://myproject.wrenchmode.com/maintenance"
+        switch_url: "https://myproject.wrenchmode.com/maintenance",
+        ip_whitelist: [
+          "192.168.0.1/24",
+          "10.20.0.0/32"
+        ]
       });
     });
 
@@ -87,6 +93,56 @@ describe("WrenchmodeExpress", function() {
         middleware(request, response, function() {})
         assert(scope.isDone());
         assert.equal(200, response.statusCode);
+        done();
+      }, 30);
+    });
+
+    it("should allow a request through if the IP is whitelisted", function(done) {
+      let options = {
+        jwt: "foo",
+        checkDelaySecs: 0.001
+      };
+
+      let middleware = wrenchmodeExpress(options);
+
+      let allowedIps = [
+          "192.168.0.1",
+          "192.168.0.20",
+          "192.168.0.255",
+          "10.20.0.0"
+      ];
+
+      setTimeout(function() {
+        allowedIps.forEach(function(ip) {
+          request.ip = ip;
+          middleware(request, response, function() {})
+          assert.equal(200, response.statusCode);
+        });
+        done();
+      }, 30);
+    });
+
+
+    it("should redirect to Wrenchmode if the IP is not whitelisted", function(done) {
+      let options = {
+        jwt: "foo",
+        checkDelaySecs: 0.001
+      };
+
+      let middleware = wrenchmodeExpress(options);
+
+      let rejectedIps = [
+        "127.0.0.1",
+        "192.168.1.0",
+        "10.20.0.1"
+      ];
+
+      setTimeout(function() {
+        rejectedIps.forEach(function(ip) {
+          request.ip = ip;
+          middleware(request, response, function() {})
+          assert.equal(302, response.statusCode);
+        });
         done();
       }, 30);
     });
