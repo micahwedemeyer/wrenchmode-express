@@ -4,7 +4,7 @@ var os = require('os');
 var process = require('process');
 var Netmask = require('netmask').Netmask;
 
-const VERSION = "0.0.1";
+const VERSION = "0.0.2";
 const CLIENT_NAME = "wrenchmode-express";
 
 function wrenchmodeExpress(options) {
