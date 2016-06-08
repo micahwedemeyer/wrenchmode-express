@@ -30,7 +30,7 @@ function wrenchmodeExpress(options) {
   // Set up the periodic status checking
   var currentStatus = {
     switched: false,
-    switchURL: null,
+    switchUrl: null,
     ipWhitelist: []
   };
   statusCheckLoop(currentStatus, opts);
@@ -38,7 +38,7 @@ function wrenchmodeExpress(options) {
   return function(req, res, next) {
     var shouldShowSwitch = currentStatus.switched && !opts.forceOpen && !isIpWhitelisted(req, currentStatus);
     if( shouldShowSwitch ) {
-      res.redirect(302, currentStatus.switchURL);
+      res.redirect(302, currentStatus.switchUrl);
     } else {
       next();
     }
@@ -97,7 +97,7 @@ function retrieveStatus(opts) {
     });
     req.setTimeout(opts.readTimeoutSecs * 1000);
 
-    req.write(JSON.stringify(buildUpdatePackage));
+    req.write(JSON.stringify(buildUpdatePackage()));
     req.end();
 
     req.on('error', (e) => {
