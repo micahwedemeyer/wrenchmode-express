@@ -11,7 +11,7 @@ npm install --save wrenchmode-express
 ## Usage
 
 ```javascript
-# app.js
+// app.js
 var express = require('express');
 var app = express();
 var wrenchmodeExpress = require('wrenchmode-express');
@@ -21,8 +21,8 @@ app.use(wrenchmodeExpress({
 }));
 
 
-# If you want to test in staging prior to deploying to production.
-# (Coming soon, still not implemented...)
+// If you want to test in staging prior to deploying to production.
+// (Coming soon, still not implemented...)
 app.use(wrenchmodeExpress({
   jwt: "your-really-long-jwt",
   ignoreTestMode: false
