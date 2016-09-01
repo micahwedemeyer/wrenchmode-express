@@ -4,12 +4,14 @@ var os = require('os');
 var process = require('process');
 var Netmask = require('netmask').Netmask;
 
-const VERSION = "0.0.2";
+const VERSION = "0.0.3";
 const CLIENT_NAME = "wrenchmode-express";
+const HEROKU_JWT_VAR = "WRENCHMODE_PROJECT_JWT";
 
 function wrenchmodeExpress(options) {
 
   var opts = {
+    jwt: process.env[HEROKU_JWT_VAR],
     forceOpen: false,
     ignoreTestMode: true,
     disableLocalWrench: false,
